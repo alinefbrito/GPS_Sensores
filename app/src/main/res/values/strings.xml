@@ -1,0 +1,34 @@
+<!--
+  Copyright 2017 Google Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources>
+    <string name="app_name">Localização</string>
+    <string name="get_location">Obter Localização</string>
+    <string name="android_image">Android Logo</string>
+    <string name="textview_hint">Clique no botão para iniciar
+    </string>
+    <string name="location_permission_denied">Permisse negada, autorize a aplicação
+    </string>
+    <string name="address_text">"Endereço: %1$s  \n Latitude: %2$s \n Longitude: %3$s \n Timestamp: %4$tr"</string>
+    <string name="acelerometro_text">"x: %1$f  \n y: %2$f \n z: %3$f \n Timestamp: %4$tr"</string>
+
+    <string name="no_location">Localização Indisponível</string>
+    <string name="no_address_found">Endereço não disponível</string>
+    <string name="loading">Carregando…</string>
+    <string name="service_not_available">Serviço Indisponível</string>
+    <string name="invalid_lat_long_used">Coordenadas Inválidas</string>
+    <string name="start_tracking_location">Iniciar a Busca</string>
+    <string name="stop_tracking_location">Parar a Busca</string>
+</resources>
