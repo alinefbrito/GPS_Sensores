@@ -312,7 +312,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         if (mTrackingLocation) {
             startTrackingLocation();
+
         }
+        recuperar();
         super.onResume();
 //registra o sensor no onresume
         sensorManager.registerListener(this, acelerometro, SensorManager.SENSOR_DELAY_NORMAL);
@@ -332,11 +334,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private void recuperar() {
 
-        SharedPreferences settings = getSharedPreferences(PREFERENCIAS_NAME, 0);
-        lastLatitude = settings.getString(LATITUDE_KEY, "");
-        lastLongitude = settings.getString(LONGITUDE_KEY, "");
-        long time = settings.getLong(LASTDATE_KEY, 0);
-        lastAdress = settings.getString(LASTADRESS_KEY, "");
+
+        lastLatitude = mPreferences.getString(LATITUDE_KEY, "");
+        lastLongitude = mPreferences.getString(LONGITUDE_KEY, "");
+        long time = mPreferences.getLong(LASTDATE_KEY, 0);
+        lastAdress = mPreferences.getString(LASTADRESS_KEY, "");
         Toast.makeText(this,
                 getString(R.string.address_text,
                         lastAdress, lastLatitude, lastLongitude, time),
