@@ -19,7 +19,7 @@
     <string name="android_image">Android Logo</string>
     <string name="textview_hint">Clique no botão para iniciar
     </string>
-    <string name="location_permission_denied">Permisse negada, autorize a aplicação
+    <string name="location_permission_denied">Permissão negada, autorize a aplicação
     </string>
     <string name="address_text">"Endereço: %1$s  \n Latitude: %2$s \n Longitude: %3$s \n Timestamp: %4$tr"</string>
     <string name="acelerometro_text">"x: %1$f  \n y: %2$f \n z: %3$f \n Timestamp: %4$tr"</string>

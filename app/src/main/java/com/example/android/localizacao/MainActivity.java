@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.walkmyandroid;
+package com.example.android.localizacao;
 
 import android.Manifest;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -48,30 +47,39 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements SensorEventListener,
         FetchAddressTask.OnTaskCompleted {
 
-    // Constants
-    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    // Arquivo shared preferences
+    public static final String PREFERENCIAS_NAME = "com.example.android.localizacao";
     private static final String TRACKING_LOCATION_KEY = "tracking_location";
+    // Constantes
+    private static final int REQUEST_LOCATION_PERMISSION = 1;
+    private static final String LATITUDE_KEY = "latitude";
+    private static final String LONGITUDE_KEY = "longitude";
+    private static final String LASTDATE_KEY = "data";
 
     // Views
     private Button mLocationButton;
     private TextView mLocationTextView, mAcelerometerTextView;
     private ImageView mAndroidImageView;
-
-    // Location classes
-    private boolean mTrackingLocation;
+    private static final String LASTADRESS_KEY = "adress";
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationCallback mLocationCallback;
-   // private Location location;
-
-    // Animation
-    private AnimatorSet mRotateAnim;
+    // private Location location;
+    // classes Location
+    private boolean mTrackingLocation;
 
     //Acelerometro
 
     private SensorManager sensorManager;
-    // Sensor - Sensor that we will use, in this case will be Accelerometer
-    private Sensor accelerometer;
+    // Animação
+    private AnimatorSet mRotateAnim;
     private float bestOfX = 0, bestOfY = 0, bestOfZ = 0;
+    // Sensor que será utilizado
+    private Sensor acelerometro;
+    // Shared preferences
+    private SharedPreferences mPreferences;
+    private String lastLatitude = "";
+    private String lastLongitude = "";
+    private String lastAdress = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,22 +92,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mAndroidImageView = (ImageView) findViewById(R.id.imageview_android);
 
 
-        // Initialize the FusedLocationClient.
+        // Inicializa FusedLocationClient.
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(
                 this);
 
-        // Set up the animation.
+        // Configura a animação.
         mRotateAnim = (AnimatorSet) AnimatorInflater.loadAnimator
                 (this, R.animator.rotate);
         mRotateAnim.setTarget(mAndroidImageView);
 
-        // Restore the state if the activity is recreated.
+        // Recupera o estado da aplicação quando é recriado
         if (savedInstanceState != null) {
             mTrackingLocation = savedInstanceState.getBoolean(
                     TRACKING_LOCATION_KEY);
         }
 
-        // Set the listener for the location button.
+        // Listener do botão de localização.
         mLocationButton.setOnClickListener(new View.OnClickListener() {
             /**
              * Toggle the tracking state.
@@ -115,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        // Initialize the location callbacks.
+        // Inicializa os callbacks da locations.
         mLocationCallback = new LocationCallback() {
             /**
              * This is the callback that is triggered when the
@@ -126,32 +134,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onLocationResult(LocationResult locationResult) {
                 // If tracking is turned on, reverse geocode into an address
                 if (mTrackingLocation) {
-                     new FetchAddressTask(MainActivity.this, MainActivity.this)
+                    new FetchAddressTask(MainActivity.this, MainActivity.this)
                             .execute(locationResult.getLastLocation());
                 }
             }
         };
 
         //recupera o sensor default e chama o meto de listagem de sensores
-        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        acelerometro = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        sensorManager.registerListener( this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, acelerometro, SensorManager.SENSOR_DELAY_NORMAL);
 
         listSensors();
+
+        //inicializa as preferências do usuário
+        mPreferences = getSharedPreferences(PREFERENCIAS_NAME, MODE_PRIVATE);
+        //recupera as preferencias
+        recuperar();
+
     }
 
-    public void listSensors(){
-        List<Sensor> deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
-        for(Sensor s: deviceSensors){
-            Log.d("Sensors: ", s.getName());
-        }
-    }
+
     /**
-     * Starts tracking the device. Checks for
-     * permissions, and requests them if they aren't present. If they are,
-     * requests periodic location updates, sets a loading text and starts the
-     * animation.
+     * Inicia a nusca da localização.
+     * Busca as permissões e requisição se não estiverem presentes
+     * Se estiverem requisitas as atualizações, define texto de carregamento e a animação
      */
     private void startTrackingLocation() {
         if (ActivityCompat.checkSelfPermission(this,
@@ -177,10 +185,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    /**
+     * Define os location requests
+     *
+     * @return retorna os parametros.
+     */
+    private LocationRequest getLocationRequest() {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        return locationRequest;
+    }
 
     /**
-     * Stops tracking the device. Removes the location
-     * updates, stops the animation, and resets the UI.
+     * Para a busca da localização, animação e altera texto botão
      */
     private void stopTrackingLocation() {
         if (mTrackingLocation) {
@@ -193,21 +212,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
     /**
-     * Sets up the location request.
-     *
-     * @return The LocationRequest object containing the desired parameters.
-     */
-    private LocationRequest getLocationRequest() {
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        return locationRequest;
-    }
-
-
-    /**
-     * Saves the last location on configuration change
+     * Salva a ultima localização
      */
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -216,25 +221,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     /**
-     * Callback that is invoked when the user responds to the permissions
-     * dialog.
+     * Callback chamado com a resposta da request permission
      *
-     * @param requestCode  Request code representing the permission request
-     *                     issued by the app.
-     * @param permissions  An array that contains the permissions that were
-     *                     requested.
-     * @param grantResults An array with the results of the request for each
-     *                     permission requested.
+     * @param requestCode  Código da requisição
+     * @param permissions  Array com as requisições solicitadas.
+     * @param grantResults Array com a resposta das requisições
      */
     @Override
     public void onRequestPermissionsResult(int requestCode,
-            @NonNull String[] permissions,
-            @NonNull int[] grantResults) {
+                                           @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         switch (requestCode) {
             case REQUEST_LOCATION_PERMISSION:
-
-                // If the permission is granted, get the location, otherwise,
-                // show a Toast
+                // Permissão garantida
                 if (grantResults.length > 0
                         && grantResults[0]
                         == PackageManager.PERMISSION_GRANTED) {
@@ -248,45 +247,61 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    //Método com a resposta da Fetch Adress Task
     @Override
     public void onTaskCompleted(String[] result) {
         if (mTrackingLocation) {
             // Update the UI
+            lastLatitude = result[1];
+            lastLongitude = result[2];
+            lastAdress = result[0];
             mLocationTextView.setText(getString(R.string.address_text,
-                            result[0], result[1], result[2], System.currentTimeMillis()));
+                    lastAdress, lastLatitude, lastLongitude, System.currentTimeMillis()));
         }
     }
 
+    //lista os sensores disponiveis
+    public void listSensors() {
+        List<Sensor> deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+        for (Sensor s : deviceSensors) {
+            Log.d("Sensors: ", s.getName());
+        }
+    }
+
+    //Monitora as alterações nos sensores
     @Override
     public void onSensorChanged(SensorEvent event) {
-        // We will get the values X, Y and Z
+        // Eixos X, Y e Z do acelerometro
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
 
-        if(x > bestOfX) {
+        if (x > bestOfX) {
             bestOfX = x;
         }
-        if(y > bestOfY) {
+        if (y > bestOfY) {
             bestOfY = y;
         }
-        if(z > bestOfZ) {
+        if (z > bestOfZ) {
             bestOfZ = z;
         }
         mAcelerometerTextView.setText(getString(R.string.acelerometro_text,
-               bestOfX, bestOfY, bestOfZ, System.currentTimeMillis()));
+                bestOfX, bestOfY, bestOfZ, System.currentTimeMillis()));
 
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // do something
     }
+
     //sobrescreve os métodos referentes aos sensores
     @Override
     protected void onPause() {
         if (mTrackingLocation) {
             stopTrackingLocation();
             mTrackingLocation = true;
+            armazenar(lastLatitude, lastLongitude, lastAdress);
         }
 //remove o listener ao pausar
         sensorManager.unregisterListener(this);
@@ -300,7 +315,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         super.onResume();
 //registra o sensor no onresume
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, acelerometro, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
+    //Armazena as preferencias do usuário
+    //na aplicação será armazenada a última localicação
+
+    private void armazenar(String latitude, String longitude, String lastAdress) {
+        SharedPreferences.Editor preferencesEditor = mPreferences.edit();
+        preferencesEditor.putString(LATITUDE_KEY, latitude);
+        preferencesEditor.putString(LONGITUDE_KEY, longitude);
+        preferencesEditor.putLong(LASTDATE_KEY, System.currentTimeMillis());
+        preferencesEditor.putString(LASTADRESS_KEY, lastAdress);
+        preferencesEditor.apply();
+    }
+
+    private void recuperar() {
+
+        SharedPreferences settings = getSharedPreferences(PREFERENCIAS_NAME, 0);
+        lastLatitude = settings.getString(LATITUDE_KEY, "");
+        lastLongitude = settings.getString(LONGITUDE_KEY, "");
+        long time = settings.getLong(LASTDATE_KEY, 0);
+        lastAdress = settings.getString(LASTADRESS_KEY, "");
+        Toast.makeText(this,
+                getString(R.string.address_text,
+                        lastAdress, lastLatitude, lastLongitude, time),
+                Toast.LENGTH_SHORT).show();
+
+    }
 }
