@@ -51,7 +51,7 @@ class FetchAddressTask extends AsyncTask<Location, Void, String[]> {
         Geocoder geocoder = new Geocoder(mContext,
                 Locale.getDefault());
 
-        // Get the passed in location
+        // Obtem o valor informado pelo dispositivo referente a geolocalização
         Location location = params[0];
         List<Address> addresses = null;
         String[] resultMessage = new String[3];
