@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/WalkMyAndroid-Solution.iml" filepath="$PROJECT_DIR$/.idea/modules/WalkMyAndroid-Solution.iml" group="WalkMyAndroid-Solution" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app.iml" group="WalkMyAndroid-Solution/app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/GPS_Sensores.iml" filepath="$PROJECT_DIR$/.idea/modules/GPS_Sensores.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/GPS_Sensores.app.unitTest.iml" />
     </modules>
   </component>
 </project>

@@ -19,8 +19,8 @@
     <objectAnimator
         android:propertyName="rotation"
         android:duration="500"
-        android:valueFrom="-10"
-        android:valueTo="10"
+        android:valueFrom="-15"
+        android:valueTo="15"
         android:repeatCount="infinite"
         android:repeatMode= "reverse"/>
 </set>
